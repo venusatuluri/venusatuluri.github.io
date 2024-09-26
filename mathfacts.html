@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 50px;
+            background-color: #F5F5F5;
+            font-family: Arial, sans-serif;
+        }
+        .inner-settings {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* This will center all child elements horizontally. */
+            gap: 20px; /* This will add a space of 20px between each child div. */
+        }
+        #problem {
+            margin-right: 10px;
+        }
+        #answer {
+            border: none;
+            border-bottom: 2px solid black;
+            font-size: 50px;
+            outline: none;
+            width: 100px;
+            text-align: center;
+            -webkit-appearance: textfield;  /* Removes up and down arrows */
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .shake-horizontal {
+            animation: shake-horizontal 0.8s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake-horizontal {
+            0%, 100% {transform: translateX(0);}
+            10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
+            20%, 40%, 60%, 80% {transform: translateX(10px);}
+        }
+        #settings, #problem-view {
+            display: none;
+        }
+        #settings.visible, #problem-view.visible {
+            display: flex;
+        }
+        /* Increase size of radio buttons */
+        input[type="radio"] {
+            height: 25px;
+            width: 25px;
+        }
+        /* Style the dropdown */
+        select {
+            font-size: 50px;
+            border: none;
+            outline: none;
+        }
+        /* Style the button */
+        button {
+            font-size: 50px;
+            padding: 10px 20px;
+        }
+        label {
+            display: block;
+        }
+    </style>
+    <script>
+        var correctCount = 0;
+        var problemCount = 0;
+        var problemType;
+        var totalProblems;
+        var startTime;
+
+        function newProblem() {
+            if (problemCount >= totalProblems) {
+                var endTime = new Date();
+                var timeDiff = endTime - startTime; // in ms
+                timeDiff /= 1000; // convert to seconds
+                var seconds = Math.round(timeDiff);
+                document.body.innerHTML = "Finished! You solved " + correctCount + " out of " + problemCount + " problems in " + seconds + " seconds. Average time per problem: " + (seconds / problemCount).toFixed(2) + " seconds.";
+                return;
+            }
+            var num1, num2;
+            if (problemType == "addition") {
+                // Addition problem
+                num1 = Math.floor(Math.random() * 100) + 1;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                document.getElementById("problem").innerText = num1 + " + " + num2 + " =";
+                localStorage.setItem('answer', num1 + num2);
+            } else {
+                // Subtraction problem
+                num1 = Math.floor(Math.random() * 11) + 10;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                document.getElementById("problem").innerText = num1 + " - " + num2 + " =";
+                localStorage.setItem('answer', num1 - num2);
+            }
+            problemCount++;
+        }
+
+        function checkAnswer() {
+            var answer = parseInt(document.getElementById("answer").value);
+            if (answer === parseInt(localStorage.getItem('answer'))) {
+                correctCount++;
+                document.getElementById("answer").value = "";
+                newProblem();
+            } else {
+                document.getElementById("answer").classList.add("shake-horizontal");
+                setTimeout(function() {
+                    document.getElementById("answer").classList.remove("shake-horizontal");
+                }, 800);
+                document.getElementById("answer").value = "";
+            }
+        }
+
+        function start() {
+            problemType = document.querySelector('input[name="problem-type"]:checked').value;
+            totalProblems = document.getElementById("total-problems").value;
+            startTime = new Date();
+            document.getElementById("settings").classList.remove("visible");
+            document.getElementById("problem-view").classList.add("visible");
+            newProblem();
+        }
+    </script>
+</head>
+<body>
+    <div id="settings" class="visible">
+        <div class="inner-settings"> <!-- inner-settings div -->
+            <div>
+                <input type="radio" name="problem-type" value="addition" checked> Addition
+            </div>
+            <div>
+                <input type="radio" name="problem-type" value="subtraction"> Subtraction
+            </div>
+            <div>
+                <select id="total-problems">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <button onclick="start();">Let's go!</button>
+        </div> <!-- end of inner-settings div -->
+    </div>
+    <div id="problem-view">
+        <div id="problem"></div>
+    <!--    <input type="tel" id="answer" pattern="\d*" onkeydown="if (event.keyCode == 13) checkAnswer();" onchange="checkAnswer();">
+        -->
+        <input type="number" id="answer" onkeydown="if (event.keyCode == 13) checkAnswer();">
+    </div>
+</body>
+</html>
